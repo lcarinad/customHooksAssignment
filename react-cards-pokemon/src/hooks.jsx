@@ -12,15 +12,30 @@ function useFlip() {
   return [isUp, flipCard];
 }
 
-function useAxios(url) {
+function useAxios(initialUrl = null) {
   const [data, setData] = useState([]);
+  const [url, setUrl] = useState(initialUrl);
+  const [trigger, setTrigger] = useState(0);
 
   const fetchData = async () => {
-    const response = await axios.get(url);
-    setData((data) => [...data, { ...response.data, id: uuid() }]);
+    if (url) {
+      const response = await axios.get(url);
+      setData((data) => [...data, { ...response.data, id: uuid() }]);
+    }
   };
 
-  return [data, fetchData];
+  useEffect(() => {
+    if (url) {
+      fetchData();
+    }
+  }, [url, trigger]);
+
+  const setFetchUrl = (newUrl) => {
+    setUrl(newUrl);
+    setTrigger((t) => t + 1); // This ensures the effect runs
+  };
+
+  return [data, setFetchUrl];
 }
 
 export { useFlip, useAxios };
